@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "noLib": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "outDir": "./build"
+  },
+  "filesGlob": [
+    "../node_modules/typescript/lib/lib.core.es6.d.ts",
+    "../typings/*.d.ts",
+    "./typings/*.d.ts",
+    "./src/**/*.ts"
+  ],
+  "files": [
+    "../node_modules/typescript/lib/lib.es6.d.ts",
+    "../typings/index.d.ts",
+    "./typings/index.d.ts",
+    "./src/exportZipSpec.ts"
+  ]
+}
