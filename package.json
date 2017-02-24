@@ -1,6 +1,6 @@
 {
   "name": "@akashic/akashic-cli-export-zip",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A module to export akashic game as a zip",
   "main": "lib/index.js",
   "scripts": {
@@ -37,14 +37,14 @@
     "jasmine-terminal-reporter": "~0.9.1",
     "mdast": "~2.0.0",
     "mdast-lint": "~1.1.1",
-    "mock-fs": "3.9.0",
+    "mock-fs": "3.12.1",
     "tslint": "~3.7.4",
     "typescript": "1.7.5",
     "typings": "1.0.4"
   },
   "typings": "lib/index.d.ts",
   "dependencies": {
-    "@akashic/akashic-cli-commons": "~0.1.2",
+    "@akashic/akashic-cli-commons": "~0.2.0",
     "commander": "2.8.1",
     "archiver": "0.21.0"
   },
