@@ -2,9 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as cmn from "@akashic/akashic-cli-commons";
 import archiver = require("archiver");
-
 import readdir = require("fs-readdir-recursive");
-
 
 export interface ExportZipCommandParameterObject {
 	quiet?: boolean;
