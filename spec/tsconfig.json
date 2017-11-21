@@ -7,7 +7,7 @@
     "module": "commonjs",
     "outDir": "./build"
   },
-  "files": [
-    "./src/exportZipSpec.ts"
+  "include": [
+    "./src/**/*.ts"
   ]
 }
