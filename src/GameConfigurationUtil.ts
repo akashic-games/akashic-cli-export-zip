@@ -19,6 +19,10 @@ export function removeScriptFromFilePaths(gamejson: cmn.GameConfiguration, fileP
 		gamejson.globalScripts = gamejson.globalScripts.filter(p => !table.hasOwnProperty(p));
 }
 
+export function makeScriptAssetPath(filename: string): string {
+	return "script/" + filename + ".js";
+}
+
 export function findUniqueScriptAssetName(gamejson: cmn.GameConfiguration, prefix: string): string {
 	let idTable: { [keys: string]: boolean } = {};
 	let pathTable: { [key: string]: boolean } = {};
@@ -26,21 +30,17 @@ export function findUniqueScriptAssetName(gamejson: cmn.GameConfiguration, prefi
 	Object.keys(gamejson.assets).forEach(aid => (idTable[aid] = pathTable[gamejson.assets[aid].path] = true));
 	(gamejson.globalScripts || []).forEach(p => (idTable[p] = pathTable[p] = true));
 
-	function makePath(filename: string): string {
-		return "script/" + filename + ".js";
-	}
-
-	if (!idTable.hasOwnProperty(prefix) && !pathTable.hasOwnProperty(makePath(prefix)))
+	if (!idTable.hasOwnProperty(prefix) && !pathTable.hasOwnProperty(makeScriptAssetPath(prefix)))
 		return prefix;
 	let i = 0;
-	while (idTable.hasOwnProperty(prefix + i) || pathTable.hasOwnProperty(makePath(prefix + i)))
+	while (idTable.hasOwnProperty(prefix + i) || pathTable.hasOwnProperty(makeScriptAssetPath(prefix + i)))
 		++i;
 	return prefix + i;
 }
 
 export function addScriptAsset(gamejson: cmn.GameConfiguration, prefix: string): string {
 	const aid = findUniqueScriptAssetName(gamejson, prefix);
-	const filePath = "script/" + aid + ".js";
+	const filePath = makeScriptAssetPath(aid);
 	gamejson.assets[aid] = {
 		type: "script",
 		global: true,
