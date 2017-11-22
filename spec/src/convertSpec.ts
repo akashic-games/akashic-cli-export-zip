@@ -2,7 +2,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as mockfs from "mock-fs";
 import * as cmn from "@akashic/akashic-cli-commons";
-import { mkdirpSync, bundleEntryPoint } from "../../lib/convert";
+import { mkdirpSync, bundleScripts } from "../../lib/convert";
 
 describe("convert", () => {
 
@@ -10,11 +10,10 @@ describe("convert", () => {
 		mockfs.restore();
 	});
 
-	describe("bundleEntryPoint", () => {
+	describe("bundleScripts", () => {
 		it("bundles scripts", (done) => {
-			bundleEntryPoint(require("../fixtures/simple_game/game.json"), path.resolve(__dirname, "..", "fixtures", "simple_game"))
+			bundleScripts(require("../fixtures/simple_game/game.json").main, path.resolve(__dirname, "..", "fixtures", "simple_game"))
 				.then((result) => {
-					expect(result.hasMain).toBe(true);
 					expect(result.filePaths).toEqual([
 						"script/bar.js",
 						"script/foo.js",

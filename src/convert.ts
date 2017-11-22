@@ -28,14 +28,13 @@ export function _completeConvertGameParameterObject(param: ConvertGameParameterO
 }
 
 export interface BundleResult {
-	hasMain: boolean;
 	bundle: string;
 	filePaths: string[];
 }
 
-export function bundleEntryPoint(gamejson: cmn.GameConfiguration, basedir: string): Promise<BundleResult> {
+export function bundleScripts(entryPoint: string, basedir: string): Promise<BundleResult> {
 	const b = browserify({
-		entries: gamejson.main || gamejson.assets.mainScene.path,
+		entries: entryPoint,
 		basedir,
 		builtins: false,
 		standalone: "aez_bundle_main"
@@ -49,7 +48,7 @@ export function bundleEntryPoint(gamejson: cmn.GameConfiguration, basedir: strin
 		b.bundle((err: any, buf: Buffer) => {
 			if (err)
 				return reject(err);
-			resolve({ hasMain: !!gamejson.main, bundle: buf.toString(), filePaths });
+			resolve({ bundle: buf.toString(), filePaths });
 		});
 	});
 }
@@ -95,13 +94,13 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 		.then(() => {
 			if (!param.bundle)
 				return;
-			return bundleEntryPoint(gamejson, param.dest)
+			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.dest)
 				.then(result => {
 					gcu.removeScriptFromFilePaths(gamejson, result.filePaths);
 					result.filePaths.forEach(p => fs.unlinkSync(path.resolve(param.dest, p)));
 
 					let entryPointPath: string;
-					if (result.hasMain) {
+					if (!!gamejson.main) {
 						entryPointPath = gcu.addScriptAsset(gamejson, "aez_bundle_main");
 						gamejson.main = "./" + entryPointPath;
 					} else {

@@ -16,7 +16,6 @@ interface CommandParameterObject {
 
 function cli(param: CommandParameterObject): void {
 	var logger = new ConsoleLogger({ quiet: param.quiet });
-	console.log("param", param);
 	Promise.resolve()
 		.then(() => promiseExportZip({
 			bundle: param.bundle,
