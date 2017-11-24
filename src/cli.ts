@@ -2,20 +2,29 @@ import * as fs from "fs";
 import * as path from "path";
 import * as commander from "commander";
 import { ConsoleLogger } from "@akashic/akashic-cli-commons";
-import { promiseExportZip } from "./exportZip";
+import { promiseExportZip } from "./bundle";
 
 interface CommandParameterObject {
+	cwd?: string;
 	quiet?: boolean;
 	output?: string;
-	exclude?: string[];
+	strip?: boolean;
+	minify?: boolean;
+	bundle?: boolean;
 }
+
 
 function cli(param: CommandParameterObject): void {
 	var logger = new ConsoleLogger({ quiet: param.quiet });
-	var exportParam = {quiet: param.quiet, output: param.output, exclude: param.exclude, logger: logger };
-
 	Promise.resolve()
-		.then(() => promiseExportZip(exportParam))
+		.then(() => promiseExportZip({
+			bundle: param.bundle,
+			minify: param.minify,
+			strip: param.strip,
+			source: param.cwd,
+			dest: param.output,
+			logger
+		}))
 		.catch((err: any) => {
 			logger.error(err);
 			process.exit(1);
@@ -28,14 +37,22 @@ commander
 	.version(ver);
 
 commander
-	.description("Export a directory as a zip")
+	.description("Export an Akashic game to a zip file")
+	.option("-C, --cwd <dir>", "A directory containing a game.json (default: .)")
 	.option("-q, --quiet", "Suppress output")
-	.option("-o, --output <fileName>", "Name of output file")
-	.option("-e, --exclude [fileNames]", "Name of exclude file", (fileNames: string, list: string[]) => {
-		list.push(fileNames);
-		return list; }, []);
+	.option("-o, --output <fileName>", "Name of output file (default: game.zip)")
+	.option("-s, --strip", "Contain only files refered by game.json")
+	.option("-M, --minify", "Minify JavaScript files")
+	.option("-b, --bundle", "Bundle script assets into a single file");
 
 export function run(argv: string[]): void {
 	commander.parse(argv);
-	cli(commander);
+	cli({
+		cwd: commander["cwd"],
+		quiet: commander["quiet"],
+		output: commander["output"],
+		strip: commander["strip"],
+		minify: commander["minify"],
+		bundle: commander["bundle"]
+	});
 }

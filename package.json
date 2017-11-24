@@ -4,9 +4,7 @@
   "description": "A module to export akashic game as a zip",
   "main": "lib/index.js",
   "scripts": {
-    "prepublish": "gulp clean && npm run install:typings && gulp compile",
-    "install:typings": "gulp install:typings",
-    "clean:typings": "gulp clean:typings",
+    "prepublish": "gulp clean && gulp compile",
     "clean": "gulp clean",
     "start": "npm run build && node bin/run",
     "build": "gulp compile",
@@ -26,6 +24,14 @@
     "package.json"
   ],
   "devDependencies": {
+    "@types/archiver": "~0.15.37",
+    "@types/browserify": "~12.0.33",
+    "@types/commander": "~2.3.31",
+    "@types/fs-readdir-recursive": "~1.0.0",
+    "@types/jasmine": "~2.8.2",
+    "@types/mock-fs": "~3.6.30",
+    "@types/node": "~8.0.53",
+    "@types/uglify-js": "2.6.29",
     "del": "~1.1.1",
     "gulp": "~3.9.1",
     "gulp-istanbul": "~0.10.4",
@@ -37,22 +43,24 @@
     "jasmine-terminal-reporter": "~0.9.1",
     "mdast": "~2.0.0",
     "mdast-lint": "~1.1.1",
-    "mock-fs": "3.12.1",
+    "mock-fs": "~4.4.2",
     "tslint": "~3.7.4",
-    "typescript": "1.7.5",
-    "typings": "1.0.4"
+    "typescript": "~2.6.1"
   },
   "typings": "lib/index.d.ts",
   "dependencies": {
-    "@akashic/akashic-cli-commons": "~0.2.0",
+    "@akashic/akashic-cli-commons": "~0.2.5",
+    "archiver": "0.21.0",
+    "browserify": "~10.2.4",
     "commander": "2.8.1",
-    "archiver": "0.21.0"
+    "fs-readdir-recursive": "~0.1.2",
+    "uglify-js": "2.6.1"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/akashic-games/akashic-cli-export-zip.git"
   },
   "publishConfig": {
-    "@akashic:registry":"http://registry.npmjs.org/"
+    "@akashic:registry": "http://registry.npmjs.org/"
   }
 }
