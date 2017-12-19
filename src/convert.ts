@@ -77,7 +77,7 @@ export function mkdirpSync(p: string): void {
 export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
 
-	const gamejsonString = fs.readFileSync(path.resolve(param.source, "game.json"), "utf-8");
+	let gamejsonString = fs.readFileSync(path.resolve(param.source, "game.json"), "utf-8");
 	const gamejson = JSON.parse(gamejsonString) as cmn.GameConfiguration;
 	const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 	files.forEach(p => {
@@ -85,10 +85,32 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 		fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
 	});
 
+	var hashLength = 30; // あとでcli引数にする
+	if (true) { // param.hasing
+		// filesのリストをgame.json経由で取り直して、それらのファイル名をハッシュ化するすごい関数
+		var assetNames = Object.keys(gamejson.assets);
+		assetNames.forEach((name) => {
+			var filePath = gamejson.assets[name].path;
+			const dirname = path.dirname(filePath);
+			const hashedFilename = cmn.Util.hashing(filePath).slice(0, hashLength);
+			const extname = path.extname(filePath);
+			const hashedFilePath = path.join(dirname,hashedFilename + extname);
+			console.log("name: " + name, "hashedPath: " + hashedFilePath, "dest: " + param.dest);
+			
+			
+			fs.renameSync(path.resolve(param.dest, filePath), path.resolve(param.dest, hashedFilePath)); // リネーム
+			gamejson.assets[name].path = hashedFilePath; // path更新
+			;
+		});
+		gamejsonString = JSON.stringify(gamejson, null, 2);
+	}
+
+
 	if (!param.bundle) { // game.jsonをコピー(bundle時は改変したgame.jsonで上書きされるのでスキップ)
 		mkdirpSync(path.dirname(path.resolve(param.dest)));
 		fs.writeFileSync(path.resolve(param.dest, "game.json"), gamejsonString);
 	}
+	console.log("game.json", JSON.stringify(gamejson));
 
 	return Promise.resolve()
 		.then(() => {
