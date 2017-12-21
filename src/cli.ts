@@ -11,6 +11,7 @@ interface CommandParameterObject {
 	strip?: boolean;
 	minify?: boolean;
 	bundle?: boolean;
+	hashFilename?: any;
 }
 
 
@@ -23,6 +24,7 @@ function cli(param: CommandParameterObject): void {
 			strip: param.strip,
 			source: param.cwd,
 			dest: param.output,
+			hashFilename: param.hashFilename,
 			logger
 		}))
 		.catch((err: any) => {
@@ -43,6 +45,7 @@ commander
 	.option("-o, --output <fileName>", "Name of output file (default: game.zip)")
 	.option("-s, --strip", "Contain only files refered by game.json")
 	.option("-M, --minify", "Minify JavaScript files")
+	.option("-H, --hash-filename [length]", "hasing asset bames.")
 	.option("-b, --bundle", "Bundle script assets into a single file");
 
 export function run(argv: string[]): void {
@@ -53,6 +56,7 @@ export function run(argv: string[]): void {
 		output: commander["output"],
 		strip: commander["strip"],
 		minify: commander["minify"],
+		hashFilename: commander["hashFilename"],
 		bundle: commander["bundle"]
 	});
 }

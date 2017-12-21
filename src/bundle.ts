@@ -13,6 +13,7 @@ export interface ExportZipParameterObject {
 	source?: string;
 	dest?: string;
 	logger?: cmn.Logger;
+	hashFilename?: number;
 }
 
 export function _completeExportZipParameterObject(param: ExportZipParameterObject): void {
@@ -21,6 +22,8 @@ export function _completeExportZipParameterObject(param: ExportZipParameterObjec
 	param.strip = !!param.strip;
 	param.source = param.source || process.cwd();
 	param.dest = param.dest || "./game.zip";
+	var hashFilenameArgumentType: string = typeof param.hashFilename;
+	param.hashFilename = !param.hashFilename ? 0 : (hashFilenameArgumentType === "Number") ? param.hashFilename : 30; // default 30
 	param.logger = param.logger || new cmn.ConsoleLogger();
 }
 
@@ -35,6 +38,7 @@ export function promiseExportZip(param: ExportZipParameterObject): Promise<void>
 		strip: param.strip,
 		source: param.source,
 		dest: destDir,
+		hashFilename: param.hashFilename,
 		logger: param.logger
 	})
 		.then(() => {

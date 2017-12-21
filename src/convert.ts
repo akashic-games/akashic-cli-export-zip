@@ -11,6 +11,7 @@ export interface ConvertGameParameterObject {
 	minify?: boolean;
 	strip?: boolean;
 	source?: string;
+	hashFilename: number;
 	dest: string;
 	/**
 	 * コマンドの出力を受け取るロガー。
@@ -74,43 +75,22 @@ export function mkdirpSync(p: string): void {
 	}
 };
 
-export function convertGame(param: ConvertGameParameterObject): Promise<void> {
+export async function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
 
-	let gamejsonString = fs.readFileSync(path.resolve(param.source, "game.json"), "utf-8");
-	const gamejson = JSON.parse(gamejsonString) as cmn.GameConfiguration;
+	const content = await cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger);
+	const gamejson = content;
+
 	const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 	files.forEach(p => {
 		mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 		fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
 	});
 
-	var hashLength = 30; // あとでcli引数にする
-	if (true) { // param.hasing
-		// filesのリストをgame.json経由で取り直して、それらのファイル名をハッシュ化するすごい関数
-		var assetNames = Object.keys(gamejson.assets);
-		assetNames.forEach((name) => {
-			var filePath = gamejson.assets[name].path;
-			const dirname = path.dirname(filePath);
-			const hashedFilename = cmn.Util.hashing(filePath).slice(0, hashLength);
-			const extname = path.extname(filePath);
-			const hashedFilePath = path.join(dirname,hashedFilename + extname);
-			console.log("name: " + name, "hashedPath: " + hashedFilePath, "dest: " + param.dest);
-			
-			
-			fs.renameSync(path.resolve(param.dest, filePath), path.resolve(param.dest, hashedFilePath)); // リネーム
-			gamejson.assets[name].path = hashedFilePath; // path更新
-			;
-		});
-		gamejsonString = JSON.stringify(gamejson, null, 2);
-	}
-
-
-	if (!param.bundle) { // game.jsonをコピー(bundle時は改変したgame.jsonで上書きされるのでスキップ)
+	if (!param.bundle && !param.hashFilename) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
 		mkdirpSync(path.dirname(path.resolve(param.dest)));
-		fs.writeFileSync(path.resolve(param.dest, "game.json"), gamejsonString);
+		cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 	}
-	console.log("game.json", JSON.stringify(gamejson));
 
 	return Promise.resolve()
 		.then(() => {
@@ -138,6 +118,15 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 					fs.writeFileSync(entryPointAbsPath, result.bundle);
 					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
 				});
+		})
+		.then(() => {
+			if (param.hashFilename > 0) {
+				const hashLength = Math.ceil(param.hashFilename);
+				const conf = new cmn.Configuration({ content: content });
+				conf.hashingAssetNames(hashLength, param.dest);
+			}
+			mkdirpSync(path.dirname(path.resolve(param.dest))); // 既に呼んでいれば不要では？
+			cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 		})
 		.then(() => {
 			if (!param.minify)
