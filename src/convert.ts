@@ -11,7 +11,7 @@ export interface ConvertGameParameterObject {
 	minify?: boolean;
 	strip?: boolean;
 	source?: string;
-	hashFilename: number;
+	hashFilename?: number;
 	dest: string;
 	/**
 	 * コマンドの出力を受け取るロガー。
@@ -89,7 +89,6 @@ export async function convertGame(param: ConvertGameParameterObject): Promise<vo
 
 	if (!param.bundle && !param.hashFilename) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
 		mkdirpSync(path.dirname(path.resolve(param.dest)));
-		cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 	}
 
 	return Promise.resolve()
@@ -122,10 +121,8 @@ export async function convertGame(param: ConvertGameParameterObject): Promise<vo
 		.then(() => {
 			if (param.hashFilename > 0) {
 				const hashLength = Math.ceil(param.hashFilename);
-				const conf = new cmn.Configuration({ content: content });
-				conf.hashingAssetNames(hashLength, param.dest);
+				cmn.Util.hashFilePaths(content, param.dest, hashLength);
 			}
-			mkdirpSync(path.dirname(path.resolve(param.dest))); // 既に呼んでいれば不要では？
 			cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 		})
 		.then(() => {

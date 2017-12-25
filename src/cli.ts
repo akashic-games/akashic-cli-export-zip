@@ -45,7 +45,7 @@ commander
 	.option("-o, --output <fileName>", "Name of output file (default: game.zip)")
 	.option("-s, --strip", "Contain only files refered by game.json")
 	.option("-M, --minify", "Minify JavaScript files")
-	.option("-H, --hash-filename [length]", "hasing asset bames.")
+	.option("-H, --hash-filename [length]", "Rename asset files with their hash values")
 	.option("-b, --bundle", "Bundle script assets into a single file");
 
 export function run(argv: string[]): void {
