@@ -5,6 +5,7 @@ import * as browserify from "browserify";
 import readdir = require("fs-readdir-recursive");
 import * as gcu from "./GameConfigurationUtil";
 import * as UglifyJS from "uglify-js";
+import { GameConfiguration } from "@akashic/akashic-cli-commons";
 
 export interface ConvertGameParameterObject {
 	bundle?: boolean;
@@ -75,23 +76,24 @@ export function mkdirpSync(p: string): void {
 	}
 };
 
-export async function convertGame(param: ConvertGameParameterObject): Promise<void> {
+export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
-
-	const content = await cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger);
-	const gamejson = content;
-
-	const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
-	files.forEach(p => {
-		mkdirpSync(path.dirname(path.resolve(param.dest, p)));
-		fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
-	});
-
-	if (!param.bundle && !param.hashFilename) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
-		mkdirpSync(path.dirname(path.resolve(param.dest)));
-	}
+	let gamejson: GameConfiguration;
 
 	return Promise.resolve()
+	.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
+	.then((result: GameConfiguration) => {
+		gamejson = result;
+		const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
+		files.forEach(p => {
+			mkdirpSync(path.dirname(path.resolve(param.dest, p)));
+			fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
+		});
+
+		if (!param.bundle && !param.hashFilename) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
+			mkdirpSync(path.dirname(path.resolve(param.dest)));
+		}
+	})
 		.then(() => {
 			if (!param.bundle)
 				return;
@@ -121,7 +123,7 @@ export async function convertGame(param: ConvertGameParameterObject): Promise<vo
 		.then(() => {
 			if (param.hashFilename > 0) {
 				const hashLength = Math.ceil(param.hashFilename);
-				cmn.Util.hashFilePaths(content, param.dest, hashLength);
+				cmn.Util.hashFilePaths(gamejson, param.dest, hashLength);
 			}
 			cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 		})
