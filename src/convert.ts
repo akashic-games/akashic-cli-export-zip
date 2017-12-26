@@ -125,7 +125,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 				const hashLength = Math.ceil(param.hashFilename);
 				cmn.Util.renameAssetFilenames(gamejson, param.dest, hashLength);
 			}
-			cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
+			return cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 		})
 		.then(() => {
 			if (!param.minify)
