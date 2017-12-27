@@ -22,7 +22,8 @@ export function _completeExportZipParameterObject(param: ExportZipParameterObjec
 	param.strip = !!param.strip;
 	param.source = param.source || process.cwd();
 	param.dest = param.dest || "./game.zip";
-	param.hashFilename = !param.hashFilename ? 0 : (<string>(typeof param.hashFilename) === "Number") ? Math.max(param.hashFilename, 4) : 30; // default 4-30
+	param.hashFilename =
+		!param.hashFilename ? 0 : (<string>(typeof param.hashFilename) === "Number") ? Math.max(param.hashFilename, 4) : 30; // default 4-30
 	param.logger = param.logger || new cmn.ConsoleLogger();
 }
 
@@ -37,7 +38,7 @@ export function promiseExportZip(param: ExportZipParameterObject): Promise<void>
 		strip: param.strip,
 		source: param.source,
 		dest: destDir,
-		hashFilename: param.hashFilename,
+		hashLength: param.hashFilename,
 		logger: param.logger
 	})
 		.then(() => {

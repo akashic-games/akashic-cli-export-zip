@@ -11,7 +11,7 @@ interface CommandParameterObject {
 	strip?: boolean;
 	minify?: boolean;
 	bundle?: boolean;
-	hashFilename?: any;
+	hashFilename?: number;
 }
 
 
