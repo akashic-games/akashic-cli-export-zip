@@ -81,58 +81,58 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	let gamejson: GameConfiguration;
 
 	return Promise.resolve()
-	.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
-	.then((result: GameConfiguration) => {
-		gamejson = result;
-		const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
-		files.forEach(p => {
-			mkdirpSync(path.dirname(path.resolve(param.dest, p)));
-			fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
-		});
-
-		if (!param.bundle && !param.hashLength) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
-			mkdirpSync(path.dirname(path.resolve(param.dest)));
-		}
-	})
-	.then(() => {
-		if (!param.bundle)
-			return;
-		return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.dest)
-			.then(result => {
-				gcu.removeScriptFromFilePaths(gamejson, result.filePaths);
-				result.filePaths.forEach(p => fs.unlinkSync(path.resolve(param.dest, p)));
-
-				let entryPointPath: string;
-				if (!!gamejson.main) {
-					entryPointPath = gcu.addScriptAsset(gamejson, "aez_bundle_main");
-					gamejson.main = "./" + entryPointPath;
-				} else {
-					entryPointPath = "script/mainScene.js";
-					gamejson.assets["mainScene"] = {
-						type: "script",
-						global: true,
-						path: entryPointPath
-					};
-				}
-				const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
-				mkdirpSync(path.dirname(entryPointAbsPath));
-				fs.writeFileSync(entryPointAbsPath, result.bundle);
-				fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
+		.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
+		.then((result: GameConfiguration) => {
+			gamejson = result;
+			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
+			files.forEach(p => {
+				mkdirpSync(path.dirname(path.resolve(param.dest, p)));
+				fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
 			});
-		})
-		.then(() => {
-			if (param.hashLength > 0) {
-				const hashLength = Math.ceil(param.hashLength);
-				cmn.Util.renameAssetFilenames(gamejson, param.dest, hashLength);
+
+			if (!param.bundle && !param.hashLength) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
+				mkdirpSync(path.dirname(path.resolve(param.dest)));
 			}
-			return cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 		})
 		.then(() => {
-			if (!param.minify)
+			if (!param.bundle)
 				return;
-			const scriptAssetPaths = gcu.extractScriptAssetFilePaths(gamejson).map(p => path.resolve(param.dest, p));
-			scriptAssetPaths.forEach(p => {
-				fs.writeFileSync(p, UglifyJS.minify(p).code);
+			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.dest)
+				.then(result => {
+					gcu.removeScriptFromFilePaths(gamejson, result.filePaths);
+					result.filePaths.forEach(p => fs.unlinkSync(path.resolve(param.dest, p)));
+
+					let entryPointPath: string;
+					if (!!gamejson.main) {
+						entryPointPath = gcu.addScriptAsset(gamejson, "aez_bundle_main");
+						gamejson.main = "./" + entryPointPath;
+					} else {
+						entryPointPath = "script/mainScene.js";
+						gamejson.assets["mainScene"] = {
+							type: "script",
+							global: true,
+							path: entryPointPath
+						};
+					}
+					const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
+					mkdirpSync(path.dirname(entryPointAbsPath));
+					fs.writeFileSync(entryPointAbsPath, result.bundle);
+					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
+				});
+			})
+			.then(() => {
+				if (param.hashLength > 0) {
+					const hashLength = Math.ceil(param.hashLength);
+					cmn.Util.renameAssetFilenames(gamejson, param.dest, hashLength);
+				}
+				return cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
+			})
+			.then(() => {
+				if (!param.minify)
+					return;
+				const scriptAssetPaths = gcu.extractScriptAssetFilePaths(gamejson).map(p => path.resolve(param.dest, p));
+				scriptAssetPaths.forEach(p => {
+					fs.writeFileSync(p, UglifyJS.minify(p).code);
+				});
 			});
-		});
 }
