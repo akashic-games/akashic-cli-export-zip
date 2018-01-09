@@ -93,8 +93,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			if (!param.bundle && !param.hashLength) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
 				mkdirpSync(path.dirname(path.resolve(param.dest)));
 			}
-		})
-		.then(() => {
+
 			if (!param.bundle)
 				return;
 			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.dest)
@@ -119,20 +118,20 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 					fs.writeFileSync(entryPointAbsPath, result.bundle);
 					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
 				});
-			})
-			.then(() => {
-				if (param.hashLength > 0) {
-					const hashLength = Math.ceil(param.hashLength);
-					cmn.Util.renameAssetFilenames(gamejson, param.dest, hashLength);
-				}
-				return cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
-			})
-			.then(() => {
-				if (!param.minify)
-					return;
-				const scriptAssetPaths = gcu.extractScriptAssetFilePaths(gamejson).map(p => path.resolve(param.dest, p));
-				scriptAssetPaths.forEach(p => {
-					fs.writeFileSync(p, UglifyJS.minify(p).code);
-				});
+		})
+		.then(() => {
+			if (param.hashLength > 0) {
+				const hashLength = Math.ceil(param.hashLength);
+				cmn.Util.renameAssetFilenames(gamejson, param.dest, hashLength);
+			}
+			return cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
+		})
+		.then(() => {
+			if (!param.minify)
+				return;
+			const scriptAssetPaths = gcu.extractScriptAssetFilePaths(gamejson).map(p => path.resolve(param.dest, p));
+			scriptAssetPaths.forEach(p => {
+				fs.writeFileSync(p, UglifyJS.minify(p).code);
 			});
+		});
 }
