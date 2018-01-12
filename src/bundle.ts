@@ -22,8 +22,6 @@ export function _completeExportZipParameterObject(param: ExportZipParameterObjec
 	param.strip = !!param.strip;
 	param.source = param.source || process.cwd();
 	param.dest = param.dest || "./game.zip";
-	param.hashFilename =
-		!param.hashFilename ? 0 : (<string>(typeof param.hashFilename) === "Number") ? Math.max(param.hashFilename, 4) : 20; // default 4-20
 	param.logger = param.logger || new cmn.ConsoleLogger();
 }
 

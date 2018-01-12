@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as fsx from "fs-extra";
 import * as path from "path";
 import * as cmn from "@akashic/akashic-cli-commons";
 import * as browserify from "browserify";
@@ -84,15 +85,13 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 		.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
 		.then((result: GameConfiguration) => {
 			gamejson = result;
+			mkdirpSync(path.dirname(path.resolve(param.dest)));
+
 			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 			files.forEach(p => {
 				mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 				fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
 			});
-
-			if (!param.bundle && !param.hashLength) { // game.jsonをコピー(bundleまたはhashing時は改変したgame.jsonで上書きされるのでスキップ)
-				mkdirpSync(path.dirname(path.resolve(param.dest)));
-			}
 
 			if (!param.bundle)
 				return;
@@ -122,7 +121,13 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 		.then(() => {
 			if (param.hashLength > 0) {
 				const hashLength = Math.ceil(param.hashLength);
-				cmn.Util.renameAssetFilenames(gamejson, param.dest, hashLength);
+				try {
+					cmn.Renamer.renameAssetFilenames(gamejson, param.dest, hashLength);
+				} catch (error) {
+					// ファイル名のハッシュ化に失敗した場合、throwして作業中のコピー先ファイルを削除する
+					fsx.removeSync(path.resolve(param.dest));
+					throw error;
+				}
 			}
 			return cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 		})
