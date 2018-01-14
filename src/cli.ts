@@ -24,7 +24,7 @@ function cli(param: CommandParameterObject): void {
 			strip: param.strip,
 			source: param.cwd,
 			dest: param.output,
-			hashFilename: !param.hashFilename ? 0 : (param.hashFilename === true) ? 20 : Number(param.hashFilename),
+			hashLength: !param.hashFilename ? 0 : (param.hashFilename === true) ? 20 : Number(param.hashFilename),
 			logger
 		}))
 		.catch((err: any) => {
