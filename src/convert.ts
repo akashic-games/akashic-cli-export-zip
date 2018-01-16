@@ -6,7 +6,6 @@ import * as browserify from "browserify";
 import readdir = require("fs-readdir-recursive");
 import * as gcu from "./GameConfigurationUtil";
 import * as UglifyJS from "uglify-js";
-import { GameConfiguration } from "@akashic/akashic-cli-commons";
 
 export interface ConvertGameParameterObject {
 	bundle?: boolean;
@@ -79,11 +78,11 @@ export function mkdirpSync(p: string): void {
 
 export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
-	let gamejson: GameConfiguration;
+	let gamejson: cmn.GameConfiguration;
 
 	return Promise.resolve()
 		.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
-		.then((result: GameConfiguration) => {
+		.then((result: cmn.GameConfiguration) => {
 			gamejson = result;
 			mkdirpSync(path.dirname(path.resolve(param.dest)));
 
@@ -126,6 +125,9 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 				} catch (error) {
 					// ファイル名のハッシュ化に失敗した場合、throwして作業中のコピー先ファイルを削除する
 					fsx.removeSync(path.resolve(param.dest));
+					if (error.message === cmn.Renamer.ERROR_FILENAME_CONFLICT) {
+						throw new Error("Hashed filename conflict. Use larger hash-filename param on command line.");
+					}
 					throw error;
 				}
 			}
