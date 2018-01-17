@@ -55,27 +55,6 @@ export function bundleScripts(entryPoint: string, basedir: string): Promise<Bund
 	});
 }
 
-export function mkdirpSync(p: string): void {
-	p = path.resolve(p);
-	try {
-		fs.mkdirSync(p);
-	} catch (e) {
-		if (e.code === "ENOENT") {
-			mkdirpSync(path.dirname(p));
-			mkdirpSync(p);
-		} else {
-			var stat;
-			try {
-				stat = fs.statSync(p);
-			} catch (e1) {
-				throw e;
-			}
-			if (!stat.isDirectory())
-				throw e;
-		}
-	}
-};
-
 export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
 	let gamejson: cmn.GameConfiguration;
@@ -84,11 +63,11 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 		.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
 		.then((result: cmn.GameConfiguration) => {
 			gamejson = result;
-			mkdirpSync(path.dirname(path.resolve(param.dest)));
+			cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest)));
 
 			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 			files.forEach(p => {
-				mkdirpSync(path.dirname(path.resolve(param.dest, p)));
+				cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 				fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
 			});
 
@@ -112,7 +91,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 						};
 					}
 					const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
-					mkdirpSync(path.dirname(entryPointAbsPath));
+					cmn.Util.mkdirpSync(path.dirname(entryPointAbsPath));
 					fs.writeFileSync(entryPointAbsPath, result.bundle);
 					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
 				});

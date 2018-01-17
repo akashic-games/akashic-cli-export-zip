@@ -2,7 +2,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as mockfs from "mock-fs";
 import * as cmn from "@akashic/akashic-cli-commons";
-import { mkdirpSync, bundleScripts } from "../../lib/convert";
+import { bundleScripts } from "../../lib/convert";
 
 describe("convert", () => {
 
@@ -30,47 +30,6 @@ describe("convert", () => {
 
 					done();
 				}, done.fail);
-		});
-	});
-
-	describe("mkdirpSync", () => {
-		it("creates directory", () => {
-			mockfs({});
-			expect(() => fs.statSync("./test/some/dir")).toThrow();
-			mkdirpSync("./test/some/dir");
-			expect(fs.statSync("./test/some/dir").isDirectory()).toBe(true);
-		});
-
-		it("does nothing if exists", () => {
-			mockfs({
-				"test": {
-					"some": {
-						"dir": {},
-						"anotherDir": {}
-					}
-				}
-			});
-			expect(fs.statSync("./test/some/dir").isDirectory()).toBe(true);
-			mkdirpSync("./test/some/dir");
-			expect(fs.statSync("./test/some/dir").isDirectory()).toBe(true);
-		});
-
-		it("throws if it is a file", () => {
-			mockfs({
-				"test": {
-					"some": {
-						"dir": "a file"
-					}
-				}
-			});
-			expect(() => mkdirpSync("./test/some/dir")).toThrow();
-		});
-
-		it("throws when it finds a file in a path", () => {
-			mockfs({
-				"test": "a file"
-			});
-			expect(() => mkdirpSync("./test/some/dir")).toThrow();
 		});
 	});
 });
