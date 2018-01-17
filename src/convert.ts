@@ -26,6 +26,7 @@ export function _completeConvertGameParameterObject(param: ConvertGameParameterO
 	param.minify = !!param.minify;
 	param.strip = !!param.strip;
 	param.source = param.source || process.cwd();
+	param.hashLength = param.hashLength || 0;
 	param.logger = param.logger || new cmn.ConsoleLogger();
 }
 
