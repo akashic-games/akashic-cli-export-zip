@@ -31,7 +31,7 @@
     "@types/jasmine": "~2.8.2",
     "@types/mock-fs": "~3.6.30",
     "@types/node": "~8.0.53",
-    "@types/uglify-js": "2.6.29",
+    "@types/uglify-js": "2.6.30",
     "del": "~1.1.1",
     "gulp": "~3.9.1",
     "gulp-istanbul": "~0.10.4",
