@@ -13,6 +13,7 @@ export interface ExportZipParameterObject {
 	source?: string;
 	dest?: string;
 	logger?: cmn.Logger;
+	hashLength?: number;
 }
 
 export function _completeExportZipParameterObject(param: ExportZipParameterObject): void {
@@ -35,6 +36,7 @@ export function promiseExportZip(param: ExportZipParameterObject): Promise<void>
 		strip: param.strip,
 		source: param.source,
 		dest: destDir,
+		hashLength: param.hashLength,
 		logger: param.logger
 	})
 		.then(() => {

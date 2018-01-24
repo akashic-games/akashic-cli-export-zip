@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as fsx from "fs-extra";
 import * as path from "path";
 import * as cmn from "@akashic/akashic-cli-commons";
 import * as browserify from "browserify";
@@ -11,6 +12,7 @@ export interface ConvertGameParameterObject {
 	minify?: boolean;
 	strip?: boolean;
 	source?: string;
+	hashLength?: number;
 	dest: string;
 	/**
 	 * コマンドの出力を受け取るロガー。
@@ -24,6 +26,7 @@ export function _completeConvertGameParameterObject(param: ConvertGameParameterO
 	param.minify = !!param.minify;
 	param.strip = !!param.strip;
 	param.source = param.source || process.cwd();
+	param.hashLength = param.hashLength || 0;
 	param.logger = param.logger || new cmn.ConsoleLogger();
 }
 
@@ -53,45 +56,22 @@ export function bundleScripts(entryPoint: string, basedir: string): Promise<Bund
 	});
 }
 
-export function mkdirpSync(p: string): void {
-	p = path.resolve(p);
-	try {
-		fs.mkdirSync(p);
-	} catch (e) {
-		if (e.code === "ENOENT") {
-			mkdirpSync(path.dirname(p));
-			mkdirpSync(p);
-		} else {
-			var stat;
-			try {
-				stat = fs.statSync(p);
-			} catch (e1) {
-				throw e;
-			}
-			if (!stat.isDirectory())
-				throw e;
-		}
-	}
-};
-
 export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
-
-	const gamejsonString = fs.readFileSync(path.resolve(param.source, "game.json"), "utf-8");
-	const gamejson = JSON.parse(gamejsonString) as cmn.GameConfiguration;
-	const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
-	files.forEach(p => {
-		mkdirpSync(path.dirname(path.resolve(param.dest, p)));
-		fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
-	});
-
-	if (!param.bundle) { // game.jsonをコピー(bundle時は改変したgame.jsonで上書きされるのでスキップ)
-		mkdirpSync(path.dirname(path.resolve(param.dest)));
-		fs.writeFileSync(path.resolve(param.dest, "game.json"), gamejsonString);
-	}
+	let gamejson: cmn.GameConfiguration;
 
 	return Promise.resolve()
-		.then(() => {
+		.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
+		.then((result: cmn.GameConfiguration) => {
+			gamejson = result;
+			cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest)));
+
+			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
+			files.forEach(p => {
+				cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
+				fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
+			});
+
 			if (!param.bundle)
 				return;
 			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.dest)
@@ -112,10 +92,26 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 						};
 					}
 					const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
-					mkdirpSync(path.dirname(entryPointAbsPath));
+					cmn.Util.mkdirpSync(path.dirname(entryPointAbsPath));
 					fs.writeFileSync(entryPointAbsPath, result.bundle);
 					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
 				});
+		})
+		.then(() => {
+			if (param.hashLength > 0) {
+				const hashLength = Math.ceil(param.hashLength);
+				try {
+					cmn.Renamer.renameAssetFilenames(gamejson, param.dest, hashLength);
+				} catch (error) {
+					// ファイル名のハッシュ化に失敗した場合、throwして作業中のコピー先ファイルを削除する
+					fsx.removeSync(path.resolve(param.dest));
+					if (error.message === cmn.Renamer.ERROR_FILENAME_CONFLICT) {
+						throw new Error("Hashed filename conflict. Use larger hash-filename param on command line.");
+					}
+					throw error;
+				}
+			}
+			return cmn.ConfigurationFile.write(gamejson, path.resolve(param.dest, "game.json"), param.logger);
 		})
 		.then(() => {
 			if (!param.minify)
