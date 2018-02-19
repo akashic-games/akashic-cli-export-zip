@@ -1,7 +1,5 @@
 import * as path from "path";
-import * as fs from "fs";
 import * as mockfs from "mock-fs";
-import * as cmn from "@akashic/akashic-cli-commons";
 import { bundleScripts } from "../../lib/convert";
 
 describe("convert", () => {
