@@ -13,7 +13,7 @@
 
 **akashic-cli-export-zip** はTypeScriptで書かれたjsモジュールであるため、ビルドにはNode.jsが必要です。
 
-`npm run build` によりgulpを使ってビルドできます。
+`npm run build` によりビルドできます。
 
 ```sh
 npm install
