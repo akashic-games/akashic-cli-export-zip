@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "prepublish": "npm run clean && npm run build",
-    "clean": "rimraf lib && rimraf spec/build",
+    "clean": "rimraf ./lib && rimraf ./spec/build",
     "start": "npm run build && node bin/run",
     "build": "tsc -p ./",
     "lint": "npm run lint:ts && npm run lint:md",
