@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import * as mockfs from "mock-fs";
 import * as cmn from "@akashic/akashic-cli-commons";
 import * as gcu from "../../lib/GameConfigurationUtil";
