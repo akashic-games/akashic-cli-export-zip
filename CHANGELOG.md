@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.2.3
+* 誤って @types/fs-extra が dependencies に含まれていた問題を修正。
+
 ## 0.2.2
 * akashic-cli-commons@0.2.8 を利用するように
 * ハッシュ化する場合、 game.json を適切に扱えていなかった問題を修正。
