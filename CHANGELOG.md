@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.4
+* akashic-cli-commons@0.2.9 を利用するように
+  * `--hash-filename` オプション有効時、 `moduleMainScripts` の値がおかしかった問題を修正。
+
 ## 0.2.3
 * 誤って @types/fs-extra が dependencies に含まれていた問題を修正。
 
