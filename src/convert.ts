@@ -66,6 +66,14 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			gamejson = result;
 			cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest)));
 
+			// 全スクリプトがES5構文になっていることを確認する
+			const invalidFiles = gcu.extractScriptAssetFilePaths(gamejson).filter(filePath => {
+				const code = fs.readFileSync(path.resolve(param.source, filePath)).toString();
+				return !cmn.LintUtil.validateEs5Code(code);
+			});
+			if (invalidFiles.length > 0) {
+				throw new Error(`The following files is not written with ES5 syntax. ${invalidFiles.join(", ")}`);
+			}
 			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 			files.forEach(p => {
 				cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));

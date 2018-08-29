@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as mockfs from "mock-fs";
-import { bundleScripts } from "../../lib/convert";
+import { bundleScripts, convertGame } from "../../lib/convert";
 
 describe("convert", () => {
 
@@ -28,6 +28,23 @@ describe("convert", () => {
 
 					done();
 				}, done.fail);
+		});
+	});
+
+	describe("convertGame", () => {
+		it("can not convert game if script that is not written with ES5 syntax", (done) => {
+			const es6GameParameter = {
+				source: path.resolve(__dirname, "..", "fixtures", "simple_game_es6"),
+				dest: path.resolve(__dirname, "..", "fixtures", "simple_game_es6")
+			};
+			convertGame(es6GameParameter)
+				.then(() => {
+					done.fail();
+				})
+				.catch((e: any) => {
+					expect(e.message).toBe("The following files is not written with ES5 syntax. script/main.js, script/foo.js");
+					done();
+				});
 		});
 	});
 });
