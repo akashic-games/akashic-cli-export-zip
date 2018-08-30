@@ -42,7 +42,10 @@ describe("convert", () => {
 					done.fail();
 				})
 				.catch((e: any) => {
-					expect(e.message).toBe("The following files is not written with ES5 syntax. script/main.js, script/foo.js");
+					const expected = "The following ES5 syntax errors exist.\n"
+						+ "script/main.js(1:1): Parsing error: The keyword 'const' is reserved\n"
+						+ "script/foo.js(1:1): Parsing error: The keyword 'const' is reserved";
+					expect(e.message).toBe(expected);
 					done();
 				});
 		});
