@@ -75,7 +75,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 				);
 			});
 			if (errorMessages.length > 0) {
-				throw new Error("The following ES5 syntax errors exist.\n" + errorMessages.join("\n"));
+				param.logger.warn("The following ES5 syntax errors exist.\n" + errorMessages.join("\n"));
 			}
 			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 			files.forEach(p => {

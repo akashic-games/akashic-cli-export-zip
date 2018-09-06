@@ -1,5 +1,7 @@
 import * as path from "path";
 import * as mockfs from "mock-fs";
+import * as fs from "fs";
+import * as fsx from "fs-extra";
 import { bundleScripts, convertGame } from "../../lib/convert";
 
 describe("convert", () => {
@@ -32,22 +34,39 @@ describe("convert", () => {
 	});
 
 	describe("convertGame", () => {
+		const destDir = path.resolve(__dirname, "..", "fixtures", "output");
+		afterEach(() => {
+			fsx.removeSync(destDir);
+		});
 		it("can not convert game if script that is not written with ES5 syntax", (done) => {
+			var warningMessage = "";
 			const es6GameParameter = {
 				source: path.resolve(__dirname, "..", "fixtures", "simple_game_es6"),
-				dest: path.resolve(__dirname, "..", "fixtures", "simple_game_es6")
+				dest: destDir,
+				logger: {
+					warn: (message: string) => {
+						warningMessage = message;
+					},
+					print: (message: string) => {
+						console.log(message);
+					},
+					error: (message: string) => {
+						console.error(message);
+					},
+					info: (message: string) => {
+						console.log(message);
+					}
+				}
 			};
 			convertGame(es6GameParameter)
 				.then(() => {
-					done.fail();
-				})
-				.catch((e: any) => {
+					expect(fs.existsSync(destDir)).toBe(true);
 					const expected = "The following ES5 syntax errors exist.\n"
 						+ "script/main.js(1:1): Parsing error: The keyword 'const' is reserved\n"
 						+ "script/foo.js(1:1): Parsing error: The keyword 'const' is reserved";
-					expect(e.message).toBe(expected);
+					expect(warningMessage).toBe(expected);
 					done();
-				});
+				}, done.fail);
 		});
 	});
 });
