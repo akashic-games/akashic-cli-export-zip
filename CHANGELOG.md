@@ -1,8 +1,12 @@
 # CHANGELOG
 
-## Unreleased changes
+## 0.2.6
 * akashic-cli-commons@0.2.10 を利用するように
 * 対象のコンテンツのスクリプトがes5構文に沿っているかを判定する処理の追加
+
+## 0.2.5
+* akashic-cli-commons@0.2.10 を利用するように
+  * `--hash-filename` オプション有効時、ディレクトリパスもハッシュ化する。
 
 ## 0.2.4
 * akashic-cli-commons@0.2.9 を利用するように
