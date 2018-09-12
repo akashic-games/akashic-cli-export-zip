@@ -68,5 +68,60 @@ describe("convert", () => {
 					done();
 				}, done.fail);
 		});
+		it("copy all files in target directory", (done) => {
+			const es6GameParameter = {
+				source: path.resolve(__dirname, "..", "fixtures", "simple_game"),
+				dest: destDir
+			};
+			convertGame(es6GameParameter)
+				.then(() => {
+					expect(fs.existsSync(path.join(destDir, "script/bar.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/foo.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/main.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/unrefered.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
+					done();
+				}, done.fail);
+		});
+		it("copy only necessary files in target directory when strip mode", (done) => {
+			const es6GameParameter = {
+				source: path.resolve(__dirname, "..", "fixtures", "simple_game"),
+				dest: destDir,
+				strip: true
+			};
+			convertGame(es6GameParameter)
+				.then(() => {
+					expect(fs.existsSync(path.join(destDir, "script/bar.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/foo.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/main.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/unrefered.js"))).toBe(false);
+					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(false);
+					done();
+				}, done.fail);
+		});
+		it("copy only necessary files and bundled-script in target directory when strip and bundle mode", (done) => {
+			const es6GameParameter = {
+				source: path.resolve(__dirname, "..", "fixtures", "simple_game"),
+				dest: destDir,
+				strip: true,
+				bundle: true
+			};
+			convertGame(es6GameParameter)
+				.then(() => {
+					expect(fs.existsSync(path.join(destDir, "script/bar.js"))).toBe(false);
+					expect(fs.existsSync(path.join(destDir, "script/foo.js"))).toBe(false);
+					expect(fs.existsSync(path.join(destDir, "script/main.js"))).toBe(false);
+					expect(fs.existsSync(path.join(destDir, "script/unrefered.js"))).toBe(false);
+					expect(fs.existsSync(path.join(destDir, "script/aez_bundle_main.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(false);
+					done();
+				}, done.fail);
+		});
 	});
 });

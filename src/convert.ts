@@ -59,13 +59,13 @@ export function bundleScripts(entryPoint: string, basedir: string): Promise<Bund
 export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
 	let gamejson: cmn.GameConfiguration;
+	let entryPointPath: string;
 
+	cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest)));
 	return Promise.resolve()
 		.then(() => cmn.ConfigurationFile.read(path.join(param.source, "game.json"), param.logger))
 		.then((result: cmn.GameConfiguration) => {
 			gamejson = result;
-			cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest)));
-
 			// 全スクリプトがES5構文になっていることを確認する
 			let errorMessages: string[] = [];
 			gcu.extractScriptAssetFilePaths(gamejson).forEach(filePath => {
@@ -77,20 +77,13 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			if (errorMessages.length > 0) {
 				param.logger.warn("The following ES5 syntax errors exist.\n" + errorMessages.join("\n"));
 			}
-			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
-			files.forEach(p => {
-				cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
-				fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
-			});
 
 			if (!param.bundle)
 				return;
-			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.dest)
+			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.source)
 				.then(result => {
 					gcu.removeScriptFromFilePaths(gamejson, result.filePaths);
-					result.filePaths.forEach(p => fs.unlinkSync(path.resolve(param.dest, p)));
 
-					let entryPointPath: string;
 					if (!!gamejson.main) {
 						entryPointPath = gcu.addScriptAsset(gamejson, "aez_bundle_main");
 						gamejson.main = "./" + entryPointPath;
@@ -107,6 +100,15 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 					fs.writeFileSync(entryPointAbsPath, result.bundle);
 					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
 				});
+		})
+		.then(() => {
+			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
+			files.forEach(p => {
+				if (p !== entryPointPath) {
+					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
+					fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
+				}
+			});
 		})
 		.then(() => {
 			if (param.hashLength > 0) {
