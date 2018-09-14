@@ -59,7 +59,7 @@ export function bundleScripts(entryPoint: string, basedir: string): Promise<Bund
 export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
 	let gamejson: cmn.GameConfiguration;
-	let entryPointPath: string;
+	const noCopyingFilePaths: string[] = [];
 
 	cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest)));
 	return Promise.resolve()
@@ -83,7 +83,9 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.source)
 				.then(result => {
 					gcu.removeScriptFromFilePaths(gamejson, result.filePaths);
+					noCopyingFilePaths.push.apply(noCopyingFilePaths, result.filePaths);
 
+					let entryPointPath: string;
 					if (!!gamejson.main) {
 						entryPointPath = gcu.addScriptAsset(gamejson, "aez_bundle_main");
 						gamejson.main = "./" + entryPointPath;
@@ -99,12 +101,16 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 					cmn.Util.mkdirpSync(path.dirname(entryPointAbsPath));
 					fs.writeFileSync(entryPointAbsPath, result.bundle);
 					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
+					noCopyingFilePaths.push(entryPointPath);
+					noCopyingFilePaths.push(path.join(path.basename(param.dest), entryPointPath));
+					noCopyingFilePaths.push("game.json");
+					noCopyingFilePaths.push(path.join(path.basename(param.dest), "game.json"));
 				});
 		})
 		.then(() => {
 			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 			files.forEach(p => {
-				if (p !== entryPointPath) {
+				if (noCopyingFilePaths.indexOf(p) === -1) {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 					fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
 				}
