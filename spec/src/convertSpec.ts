@@ -103,7 +103,7 @@ describe("convert", () => {
 					done();
 				}, done.fail);
 		});
-		it("copy bundled-script and assets in target directory when bandle mode", (done) => {
+		it("copy bundled-script in target directory when bandle mode", (done) => {
 			const es6GameParameter = {
 				source: path.resolve(__dirname, "..", "fixtures", "simple_game_using_external"),
 				dest: destDir,
@@ -119,8 +119,11 @@ describe("convert", () => {
 					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
-					expect(fs.readFileSync(path.join(destDir, "game.json")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")));
+					const gameJson = JSON.parse(fs.readFileSync(path.join(destDir, "game.json")).toString());
+					expect(gameJson.main).toBe("./script/aez_bundle_main.js");
+					expect(gameJson.assets["aez_bundle_main"].path).toBe("script/aez_bundle_main.js");
+					expect(gameJson.assets["aez_bundle_main"].type).toBe("script");
+					expect(gameJson.assets["aez_bundle_main"].global).toBe(true);
 					done();
 				}, done.fail);
 		});
@@ -134,17 +137,13 @@ describe("convert", () => {
 			};
 			convertGame(es6GameParameter)
 				.then(() => {
-					expect(fs.existsSync(path.join(outputDirectory, "node_modules/external/index.js"))).toBe(false);
-					expect(fs.existsSync(path.join(outputDirectory, "node_modules/external/package.json"))).toBe(true);
-					expect(fs.existsSync(path.join(outputDirectory, "script/main.js"))).toBe(false);
 					expect(fs.existsSync(path.join(outputDirectory, "script/unrefered.js"))).toBe(true);
 					expect(fs.existsSync(path.join(outputDirectory, "script/aez_bundle_main.js"))).toBe(true);
-					expect(fs.existsSync(path.join(outputDirectory, "text/test.json"))).toBe(false);
 					expect(fs.existsSync(path.join(outputDirectory, "game.json"))).toBe(true);
 					expect(fs.existsSync(path.join(outputDirectory, "package.json"))).toBe(true);
 					expect(fs.existsSync(path.join(outputDirectory, "output"))).toBe(false);
-					expect(fs.readFileSync(path.join(outputDirectory, "game.json")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")));
+					expect(fs.readFileSync(path.join(outputDirectory, "game.json")).toString())
+						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")).toString());
 					fsx.removeSync(outputDirectory);
 					done();
 				}, done.fail);
@@ -166,8 +165,8 @@ describe("convert", () => {
 					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(false);
-					expect(fs.readFileSync(path.join(destDir, "game.json")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")));
+					expect(fs.readFileSync(path.join(destDir, "game.json")).toString())
+						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")).toString());
 					done();
 				}, done.fail);
 		});
@@ -185,10 +184,10 @@ describe("convert", () => {
 					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
-					expect(fs.readFileSync(path.join(destDir, "game.json")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")));
-					expect(fs.readFileSync(path.join(destDir, "script/aez_bundle_main.js")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "script/aez_bundle_main.js")));
+					expect(fs.readFileSync(path.join(destDir, "game.json")).toString())
+						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")).toString());
+					expect(fs.readFileSync(path.join(destDir, "script/aez_bundle_main.js")).toString())
+						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "script/aez_bundle_main.js")).toString());
 					done();
 				}, done.fail);
 		});
@@ -209,12 +208,36 @@ describe("convert", () => {
 					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
-					expect(fs.readFileSync(path.join(destDir, "game.json")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")));
+					expect(fs.readFileSync(path.join(destDir, "game.json")).toString())
+						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")).toString());
 					done();
 				}, done.fail);
 		});
-		it("rewrite mainScene.js, even if mainScene.js already exists", (done) => {
+		it("does not rewrite aez_bundle_main-asset, even if same name asset already exists as not script-asset", (done) => {
+			const es6GameParameter = {
+				source: path.resolve(__dirname, "..", "fixtures", "simple_game_with_aez_bundle_main3"),
+				dest: destDir,
+				bundle: true
+			};
+			convertGame(es6GameParameter)
+				.then(() => {
+					expect(fs.existsSync(path.join(destDir, "script/bar.js"))).toBe(false);
+					expect(fs.existsSync(path.join(destDir, "script/foo.js"))).toBe(false);
+					expect(fs.existsSync(path.join(destDir, "script/main.js"))).toBe(false);
+					// script/aez_bundle_main.jsに被らない名前のスクリプトファイルが生成される
+					expect(fs.existsSync(path.join(destDir, "script/aez_bundle_main0.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "image/akashic-cli.png"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
+					const gameJson = JSON.parse(fs.readFileSync(path.join(destDir, "game.json")).toString());
+					expect(gameJson.assets["aez_bundle_main0"].path).toBe("script/aez_bundle_main0.js");
+					expect(gameJson.assets["aez_bundle_main0"].type).toBe("script");
+					expect(gameJson.assets["aez_bundle_main"].path).toBe("image/akashic-cli.png");
+					expect(gameJson.assets["aez_bundle_main"].type).toBe("image");
+					done();
+				}, done.fail);
+		});
+		it("rewrite mainScene-asset, even if main is not included in game.json", (done) => {
 			const es6GameParameter = {
 				source: path.resolve(__dirname, "..", "fixtures", "simple_game_with_main_scene"),
 				dest: destDir,
@@ -224,15 +247,19 @@ describe("convert", () => {
 				.then(() => {
 					expect(fs.existsSync(path.join(destDir, "script/bar.js"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "script/foo.js"))).toBe(false);
-					expect(fs.existsSync(path.join(destDir, "script/unrefered.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/main.js"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "script/mainScene.js"))).toBe(true);
-					expect(fs.existsSync(path.join(destDir, "text/test.json"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
-					expect(fs.readFileSync(path.join(destDir, "game.json")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "game.json")));
-					expect(fs.readFileSync(path.join(destDir, "script/mainScene.js")))
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "script/mainScene.js")));
+					expect(fs.readFileSync(path.join(destDir, "script/main.js")).toString())
+						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "script/main.js")).toString());
+					expect(fs.readFileSync(path.join(destDir, "script/mainScene.js")).toString())
+						.toBe(fs.readFileSync(path.join(es6GameParameter.source, "script/mainScene.js")).toString());
+					const gameJson = JSON.parse(fs.readFileSync(path.join(destDir, "game.json")).toString());
+					expect(gameJson.assets["mainScene"].path).toBe("script/main.js");
+					expect(gameJson.assets["mainScene"].type).toBe("script");
+					expect(gameJson.assets["mainScene"].global).toBe(true);
+					expect(gameJson.assets["notEntryPoint"].path).toBe("script/mainScene.js");
 					done();
 				}, done.fail);
 		});

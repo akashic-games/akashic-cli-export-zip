@@ -59,7 +59,6 @@ export function bundleScripts(entryPoint: string, basedir: string): Promise<Bund
 export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 	_completeConvertGameParameterObject(param);
 	let gamejson: cmn.GameConfiguration;
-	const noCopyingFilePaths: string[] = [];
 
 	cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest)));
 	return Promise.resolve()
@@ -79,42 +78,45 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			}
 
 			if (!param.bundle)
-				return;
-			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.source)
-				.then(result => {
-					gcu.removeScriptFromFilePaths(gamejson, result.filePaths);
-					noCopyingFilePaths.push.apply(noCopyingFilePaths, result.filePaths);
-
-					let entryPointPath: string;
-					if (!!gamejson.main) {
-						entryPointPath = gcu.addScriptAsset(gamejson, "aez_bundle_main");
-						gamejson.main = "./" + entryPointPath;
-					} else {
-						entryPointPath = "script/mainScene.js";
-						gamejson.assets["mainScene"] = {
-							type: "script",
-							global: true,
-							path: entryPointPath
-						};
-					}
-					const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
-					cmn.Util.mkdirpSync(path.dirname(entryPointAbsPath));
-					fs.writeFileSync(entryPointAbsPath, result.bundle);
-					fs.writeFileSync(path.join(param.dest, "game.json"), JSON.stringify(gamejson, null, 2));
-					noCopyingFilePaths.push(entryPointPath);
-					noCopyingFilePaths.push(path.join(path.basename(param.dest), entryPointPath));
-					noCopyingFilePaths.push("game.json");
-					noCopyingFilePaths.push(path.join(path.basename(param.dest), "game.json"));
-				});
+				return null;
+			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.source);
 		})
-		.then(() => {
+		.then((result) => {
+			const noCopyingFilePaths = new Set<string>();
+			const bundled = result != null;
+			let entryPointPath: string;
+			if (bundled) {
+				if (!gamejson.main) {
+					entryPointPath = gamejson.assets.mainScene.path;
+				}
+				gcu.removeScriptFromFilePaths(gamejson, result.filePaths);
+				result.filePaths.forEach((filePath: string) => {
+					noCopyingFilePaths.add(filePath);
+				});
+			}
 			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 			files.forEach(p => {
-				if (noCopyingFilePaths.indexOf(p) === -1) {
+				if (!noCopyingFilePaths.has(p)) {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 					fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
 				}
 			});
+			if (!bundled) {
+				return;
+			}
+			if (!!gamejson.main) {
+				entryPointPath = gcu.addScriptAsset(gamejson, "aez_bundle_main");
+				gamejson.main = "./" + entryPointPath;
+			} else {
+				gamejson.assets["mainScene"] = {
+					type: "script",
+					global: true,
+					path: entryPointPath
+				};
+			}
+			const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
+			cmn.Util.mkdirpSync(path.dirname(entryPointAbsPath));
+			fs.writeFileSync(entryPointAbsPath, result.bundle);
 		})
 		.then(() => {
 			if (param.hashLength > 0) {
