@@ -247,16 +247,15 @@ describe("convert", () => {
 				.then(() => {
 					expect(fs.existsSync(path.join(destDir, "script/bar.js"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "script/foo.js"))).toBe(false);
-					expect(fs.existsSync(path.join(destDir, "script/main.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/main.js"))).toBe(false);
 					expect(fs.existsSync(path.join(destDir, "script/mainScene.js"))).toBe(true);
+					expect(fs.existsSync(path.join(destDir, "script/mainScene0.js"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "game.json"))).toBe(true);
 					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
-					expect(fs.readFileSync(path.join(destDir, "script/main.js")).toString())
-						.not.toBe(fs.readFileSync(path.join(es6GameParameter.source, "script/main.js")).toString());
 					expect(fs.readFileSync(path.join(destDir, "script/mainScene.js")).toString())
 						.toBe(fs.readFileSync(path.join(es6GameParameter.source, "script/mainScene.js")).toString());
 					const gameJson = JSON.parse(fs.readFileSync(path.join(destDir, "game.json")).toString());
-					expect(gameJson.assets["mainScene"].path).toBe("script/main.js");
+					expect(gameJson.assets["mainScene"].path).toBe("script/mainScene0.js");
 					expect(gameJson.assets["mainScene"].type).toBe("script");
 					expect(gameJson.assets["mainScene"].global).toBe(true);
 					expect(gameJson.assets["notEntryPoint"].path).toBe("script/mainScene.js");
