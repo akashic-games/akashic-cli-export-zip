@@ -49,6 +49,18 @@ export function addScriptAsset(gamejson: cmn.GameConfiguration, prefix: string):
 	return filePath;
 }
 
+export function makeUniqueAssetPath(gamejson: cmn.GameConfiguration, assetPath: string): string {
+	let targetAssetPath = assetPath;
+	const targetDirName = path.dirname(assetPath);
+	const targetExtName = path.extname(assetPath);
+	const targetFileNamePrefix = path.basename(assetPath, targetExtName);
+	const assetIds = Object.keys(gamejson.assets);
+	for (let index = 0; assetIds.some(aid => gamejson.assets[aid].path === targetAssetPath); index++) {
+		targetAssetPath = path.join(targetDirName, targetFileNamePrefix + index + targetExtName);
+	}
+	return targetAssetPath;
+}
+
 export function extractFilePaths(gamejson: cmn.GameConfiguration, basedir: string): string[] {
 	let result: string[] = [];
 	Object.keys(gamejson.assets).forEach(aid => {

@@ -239,4 +239,21 @@ describe("GameConfigurationUtil", () => {
 			]);
 		});
 	});
+
+	describe("makeUniqueAssetPath", () => {
+		it("can get asset path not used in game.json", () => {
+			gamejson.assets["main0"] = {
+				type: "script",
+				global: true,
+				path: "script/main0.js"
+			};
+			gamejson.assets["main2"] = {
+				type: "script",
+				global: true,
+				path: "script/main2.js"
+			};
+			const result = gcu.makeUniqueAssetPath(gamejson, "script/main.js");
+			expect(result).toBe("script/main1.js");
+		});
+	});
 });

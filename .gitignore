@@ -12,3 +12,4 @@ junitresults.xml
 lib
 tmp
 .idea
+!spec/fixtures/simple_game_using_external/node_modules
