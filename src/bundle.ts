@@ -45,16 +45,14 @@ export function promiseExportZip(param: ExportZipParameterObject): Promise<void>
 			return new Promise<void>((resolve, reject) => {
 				const files = readdir(destDir).map(p => ({
 					src: path.resolve(destDir, p),
-					dest: path.join("game", path.dirname(p)),
-					expand: true,
-					flatten: true
+					entryName: p
 				}));
 				const ostream = fs.createWriteStream(param.dest);
 				const archive = archiver("zip");
 				ostream.on("close", () => resolve());
 				archive.on("error", (err) => reject(err));
 				archive.pipe(ostream);
-				archive.bulk(files);
+				files.forEach((f) => archive.file(f.src, {name: f.entryName}));
 				archive.finalize();
 			});
 			// TODO mkdtempのフォルダを削除すべき？
