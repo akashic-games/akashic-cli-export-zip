@@ -9,6 +9,11 @@
 			"path": "script/main.js",
 			"global": true
 		},
+		"ignore": {
+			"type": "script",
+			"path": "script/ignore.js",
+			"global": true
+		},
 		"test": {
 			"type": "text",
 			"path": "text/test.json",

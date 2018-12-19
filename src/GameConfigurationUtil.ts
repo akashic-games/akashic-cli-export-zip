@@ -91,3 +91,16 @@ export function extractScriptAssetFilePaths(gamejson: cmn.GameConfiguration): st
 	return result;
 }
 
+export function isEmptyScriptJs(filePath: string, buff: Buffer): boolean {
+	if (!filePath.match(/^script\/.+(\.js$)/)) return false;
+	if (!buff || buff.length === 0 ) return true;
+
+	const lines: string[] = buff.toString().trim().split(/\r\n|\r|\n/);
+	// jsファイルの中身が、interfaceの記述のみの場合は空と同様とする
+	if (filePath.match(/^script\/.+(\.[js]+$)/) && lines.length === 2) {
+		const firstLineResult = lines[0].match(/"use strict"/);
+		const secondLineResult = lines[1].match(/^(Object.defineProperty\(exports,).\s*("__esModule").\s*?({.value\s*?:\s*?true.\s*?})(\);+$)/);
+		return !!firstLineResult && !!secondLineResult;
+	}
+	return false;
+}

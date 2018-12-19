@@ -256,4 +256,25 @@ describe("GameConfigurationUtil", () => {
 			expect(result).toBe("script/main1.js");
 		});
 	});
+
+	describe("isEmptyScriptJs", () => {
+		it("when buffer is empty true is returned", () => {
+			const ret = gcu.isEmptyScriptJs("script/test.js", new Buffer(""));
+			expect(ret).toBeTruthy();
+		});
+		it("when buffer isnt empty, false is returned", () => {
+			const ret = gcu.isEmptyScriptJs("script/test.js", new Buffer("aaaaaaaaaaa"));
+			expect(ret).toBeFalsy();
+		});
+		it("for interface logic only, true is returned", () => {
+			const buff = new Buffer("\"use strict\"\r\nObject.defineProperty(exports, \"__esModule\", { value: true });");
+			const ret = gcu.isEmptyScriptJs("script/hoge/test.js", buff);
+			expect(ret).toBeTruthy();
+		});
+		it("when filepath prefix is not script, false is returned", () => {
+			const buff = new Buffer("aaaa\r\nbbb\rcccc");
+			const ret = gcu.isEmptyScriptJs("node_module/somewhere/test.js", buff);
+			expect(ret).toBeFalsy();
+		});
+	});
 });
