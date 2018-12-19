@@ -97,7 +97,11 @@ export function isEmptyScriptJs(filePath: string, buff: Buffer): boolean {
 
 	const lines: string[] = buff.toString().trim().split(/\r\n|\r|\n/);
 	// jsファイルの中身が、interfaceの記述のみの場合は空と同様とする
-	if (filePath.match(/^script\/.+(\.[js]+$)/) && lines.length === 2) {
+	// TypeScirpt 2.2.0以下の場合、1行の出力のみとなる
+	if (lines.length === 1 && lines[0].match(/"use strict"/)) {
+		return true;
+
+	} else if (lines.length === 2) {
 		const firstLineResult = lines[0].match(/"use strict"/);
 		const secondLineResult = lines[1].match(/^(Object.defineProperty\(exports,).\s*("__esModule").\s*?({.value\s*?:\s*?true.\s*?})(\);+$)/);
 		return !!firstLineResult && !!secondLineResult;

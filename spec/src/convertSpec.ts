@@ -109,7 +109,8 @@ describe("convert", () => {
 			const es6GameParameter = {
 				source: path.resolve(__dirname, "..", "fixtures", "simple_game_using_external"),
 				dest: destDir,
-				bundle: true
+				bundle: true,
+				omitEmptyJs: true
 			};
 			convertGame(es6GameParameter)
 				.then(() => {
@@ -180,7 +181,7 @@ describe("convert", () => {
 			const es6GameParameter = {
 				source: path.resolve(__dirname, "..", "fixtures", "simple_game_using_external"),
 				dest: destDir,
-				notSkipEmptyJs: true
+				omitEmptyJs: false
 			};
 			convertGame(es6GameParameter)
 				.then(() => {

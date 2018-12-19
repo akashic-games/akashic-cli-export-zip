@@ -12,7 +12,7 @@ interface CommandParameterObject {
 	minify?: boolean;
 	bundle?: boolean;
 	hashFilename?: number | boolean;
-	notSkipEmptyJs?: boolean;
+	omitEmptyJs?: boolean;
 }
 
 
@@ -26,7 +26,7 @@ function cli(param: CommandParameterObject): void {
 			source: param.cwd,
 			dest: param.output,
 			hashLength: !param.hashFilename ? 0 : (param.hashFilename === true) ? 20 : Number(param.hashFilename),
-			notSkipEmptyJs: param.notSkipEmptyJs,
+			omitEmptyJs: param.omitEmptyJs,
 			logger
 		}))
 		.catch((err: any) => {
@@ -49,7 +49,7 @@ commander
 	.option("-M, --minify", "Minify JavaScript files")
 	.option("-H, --hash-filename [length]", "Rename asset files with their hash values")
 	.option("-b, --bundle", "Bundle script assets into a single file")
-	.option("-n, --not-skip-empty-js", "Do not skip empty js files");
+	.option("--no-omit-empty-js", "Disable omitting empty js from global assets");
 
 export function run(argv: string[]): void {
 	commander.parse(argv);
@@ -61,6 +61,6 @@ export function run(argv: string[]): void {
 		minify: commander["minify"],
 		hashFilename: commander["hashFilename"],
 		bundle: commander["bundle"],
-		notSkipEmptyJs: commander["notSkipEmptyJs"]
+		omitEmptyJs: commander["omitEmptyJs"]
 	});
 }

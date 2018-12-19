@@ -271,6 +271,11 @@ describe("GameConfigurationUtil", () => {
 			const ret = gcu.isEmptyScriptJs("script/hoge/test.js", buff);
 			expect(ret).toBeTruthy();
 		});
+		it("when typescript less then equal to 2.2.0 and interface logic only, true is returned,", () => {
+			const buff = new Buffer("\"use strict\";\r\n");
+			const ret = gcu.isEmptyScriptJs("script/hoge2/test.js", buff);
+			expect(ret).toBeTruthy();
+		});
 		it("when filepath prefix is not script, false is returned", () => {
 			const buff = new Buffer("aaaa\r\nbbb\rcccc");
 			const ret = gcu.isEmptyScriptJs("node_module/somewhere/test.js", buff);

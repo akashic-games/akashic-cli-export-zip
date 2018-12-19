@@ -14,7 +14,7 @@ export interface ExportZipParameterObject {
 	dest?: string;
 	logger?: cmn.Logger;
 	hashLength?: number;
-	notSkipEmptyJs?: boolean;
+	omitEmptyJs?: boolean;
 }
 
 export function _completeExportZipParameterObject(param: ExportZipParameterObject): void {
@@ -38,7 +38,7 @@ export function promiseExportZip(param: ExportZipParameterObject): Promise<void>
 		source: param.source,
 		dest: destDir,
 		hashLength: param.hashLength,
-		notSkipEmptyJs: param.notSkipEmptyJs,
+		omitEmptyJs: param.omitEmptyJs,
 		logger: param.logger
 	})
 		.then(() => {
