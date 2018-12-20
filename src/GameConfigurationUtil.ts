@@ -104,7 +104,6 @@ export function isEmptyScriptJs(str: string): boolean {
 	if (lines.length === 1) {
 		return /"use strict";$/.test(lines[0]) ||
 			/"use strict";(Object.defineProperty\(exports,)\s*("__esModule",)\s*?({value\s*?:\s*?[true|!0]+}\));$/.test(lines[0]);
-
 	} else if (lines.length === 2) {
 		const firstLineResult = /"use strict";$/.test(lines[0]);
 		const secondLineResult = /^(Object.defineProperty\(exports,).\s*("__esModule").\s*?({.value\s*?:\s*?true.\s*?})(\);+$)/.test(lines[1]);

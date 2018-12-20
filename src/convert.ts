@@ -96,12 +96,13 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 					const buff = fs.readFileSync(path.resolve(param.source, p));
 
 					if (param.omitEmptyJs && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(buff.toString().trim())) {
-						const target = Object.keys(gamejson.assets).find((key) => {
-							if (gamejson.assets[key].type !== "script") return false;
-							return gamejson.assets[key].path === p;
+						Object.keys(gamejson.assets).some((key) => {
+							if (gamejson.assets[key].type === "script" && gamejson.assets[key].path === p) {
+								gamejson.assets[key].global = false;
+								return true;
+							}
+							return false;
 						});
-						if (target)
-							gamejson.assets[target].global = false;
 					}
 					fs.writeFileSync(path.resolve(param.dest, p), buff);
 				}
