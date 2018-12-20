@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## unreleased
+* npm auditで警告がでているモジュールの更新
+  * モジュールの更新で `archiver#bulk()` が廃止されていたため `archiver#file()` に修正
+* 参照されないスクリプトアセットを非グローバル化
+
 ## 0.2.7
 * stripモードとbundleモードを同時に使うとエラーが発生してしまう問題の修正
 

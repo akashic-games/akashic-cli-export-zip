@@ -128,7 +128,7 @@ describe("convert", () => {
 					expect(gameJson.assets["aez_bundle_main"].path).toBe("script/aez_bundle_main.js");
 					expect(gameJson.assets["aez_bundle_main"].type).toBe("script");
 					expect(gameJson.assets["aez_bundle_main"].global).toBe(true);
-					expect(gameJson.assets["ignore"].global).toBeFalsy();
+					expect(gameJson.assets["ignore2"].global).toBeFalsy();
 					done();
 				}, done.fail);
 		});
@@ -195,7 +195,7 @@ describe("convert", () => {
 					expect(fs.existsSync(path.join(destDir, "package.json"))).toBe(true);
 					const gameJson = fs.readFileSync(path.join(destDir, "game.json")).toString();
 					const gameJsonObj = JSON.parse(gameJson);
-					expect(gameJsonObj.assets["ignore"].global).toBeTruthy();
+					expect(gameJsonObj.assets["ignore2"].global).toBeTruthy();
 					done();
 				}, done.fail);
 		});

@@ -257,28 +257,49 @@ describe("GameConfigurationUtil", () => {
 		});
 	});
 
-	describe("isEmptyScriptJs", () => {
-		it("when buffer is empty true is returned", () => {
-			const ret = gcu.isEmptyScriptJs("script/test.js", new Buffer(""));
-			expect(ret).toBeTruthy();
-		});
-		it("when buffer isnt empty, false is returned", () => {
-			const ret = gcu.isEmptyScriptJs("script/test.js", new Buffer("aaaaaaaaaaa"));
-			expect(ret).toBeFalsy();
-		});
-		it("for interface logic only, true is returned", () => {
-			const buff = new Buffer("\"use strict\"\r\nObject.defineProperty(exports, \"__esModule\", { value: true });");
-			const ret = gcu.isEmptyScriptJs("script/hoge/test.js", buff);
-			expect(ret).toBeTruthy();
-		});
-		it("when typescript less then equal to 2.2.0 and interface logic only, true is returned,", () => {
-			const buff = new Buffer("\"use strict\";\r\n");
-			const ret = gcu.isEmptyScriptJs("script/hoge2/test.js", buff);
+	describe("isScriptJsFile", () => {
+		it("when filepath prefix is script, true is returned", () => {
+			const ret = gcu.isScriptJsFile("script/somewhere/test.js");
 			expect(ret).toBeTruthy();
 		});
 		it("when filepath prefix is not script, false is returned", () => {
-			const buff = new Buffer("aaaa\r\nbbb\rcccc");
-			const ret = gcu.isEmptyScriptJs("node_module/somewhere/test.js", buff);
+			const ret = gcu.isScriptJsFile("node_module/somewhere/test.js");
+			expect(ret).toBeFalsy();
+		});
+	});
+
+	describe("isEmptyScriptJs", () => {
+		it("when argument is empty true is returned", () => {
+			const ret = gcu.isEmptyScriptJs("");
+			expect(ret).toBeTruthy();
+		});
+		it("when argument isnt empty, false is returned", () => {
+			const ret = gcu.isEmptyScriptJs("aaaaaaaaaaa");
+			expect(ret).toBeFalsy();
+		});
+		it("For three or more lines", () => {
+			const ret = gcu.isEmptyScriptJs("\"use strict\";\r\nObject.defineProperty(exports, \"__esModule\", { value: true });\nvar test = 123;");
+			expect(ret).toBeFalsy();
+		});
+		it("for two lines", () => {
+			let ret = gcu.isEmptyScriptJs("\"use strict\";\r\nObject.defineProperty(exports, \"__esModule\", { value: true });");
+			expect(ret).toBeTruthy();
+
+			ret = gcu.isEmptyScriptJs("\"use strict\";\r\nObject.defineProperty(exports, \"__esModule\", { value: true });var hoge = 2;");
+			expect(ret).toBeFalsy();
+		});
+		it("for one line", () => {
+			let ret = gcu.isEmptyScriptJs("\"use strict\";");
+			expect(ret).toBeTruthy();
+			ret = gcu.isEmptyScriptJs("\"use strict\";var hoge=0;");
+			expect(ret).toBeFalsy();
+
+			ret = gcu.isEmptyScriptJs("\"use strict\";Object.defineProperty(exports,\"__esModule\",{value:!0});");
+			expect(ret).toBeTruthy();
+			ret = gcu.isEmptyScriptJs("\"use strict\";Object.defineProperty(exports,\"__esModule\",{value:true});");
+			expect(ret).toBeTruthy();
+
+			ret = gcu.isEmptyScriptJs("\"use strict\";Object.defineProperty(exports,\"__esModule\",{value:!0});var a=\"a\";");
 			expect(ret).toBeFalsy();
 		});
 	});

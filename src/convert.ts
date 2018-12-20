@@ -95,9 +95,13 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 					const buff = fs.readFileSync(path.resolve(param.source, p));
 
-					if (param.omitEmptyJs && gcu.isEmptyScriptJs(p, buff)) {
-						const fileName = path.basename(p).replace(/\.js$/, "");
-						gamejson.assets[fileName].global = false;
+					if (param.omitEmptyJs && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(buff.toString().trim())) {
+						const target = Object.keys(gamejson.assets).find((key) => {
+							if (gamejson.assets[key].type !== "script") return false;
+							return gamejson.assets[key].path === p;
+						});
+						if (target)
+							gamejson.assets[target].global = false;
 					}
 					fs.writeFileSync(path.resolve(param.dest, p), buff);
 				}

@@ -9,7 +9,7 @@
 			"path": "script/main.js",
 			"global": true
 		},
-		"ignore": {
+		"ignore2": {
 			"type": "script",
 			"path": "script/ignore.js",
 			"global": true
