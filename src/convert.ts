@@ -74,7 +74,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 				);
 			});
 			if (errorMessages.length > 0) {
-				param.logger.warn("The following ES5 syntax errors exist.\n" + errorMessages.join("\n"));
+				param.logger.warn("Non-ES5 syntax found.\n" + errorMessages.join("\n"));
 			}
 
 			if (!param.bundle)
