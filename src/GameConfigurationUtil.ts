@@ -98,16 +98,7 @@ export function isScriptJsFile(filePath: string): boolean {
 export function isEmptyScriptJs(str: string): boolean {
 	if (!str || str.length === 0) return true;
 
-	const lines: string[] = str.toString().trim().split(/\r\n|\r|\n/);
 	// jsファイルの中身が、interfaceの記述のみの場合は空と同様とする
-	// TypeScirpt 2.2.0以下かminifyされた場合は1行の出力となる
-	if (lines.length === 1) {
-		return /"use strict";$/.test(lines[0]) ||
-			/"use strict";(Object.defineProperty\(exports,)\s*("__esModule",)\s*?({value\s*?:\s*?[true|!0]+}\));$/.test(lines[0]);
-	} else if (lines.length === 2) {
-		const firstLineResult = /"use strict";$/.test(lines[0]);
-		const secondLineResult = /^(Object.defineProperty\(exports,).\s*("__esModule").\s*?({.value\s*?:\s*?true.\s*?})(\);+$)/.test(lines[1]);
-		return firstLineResult && secondLineResult;
-	}
-	return false;
+	const regex = /^"use strict";[\r\n\s]*(Object.defineProperty\(exports,\s*("__esModule",)\s*?({\s*?value\s*:\s*?[true|!0]+\s*})\);)*$/;
+	return regex.test(str.trim());
 }
