@@ -177,7 +177,7 @@ describe("convert", () => {
 					done();
 				}, done.fail);
 		});
-		it("Include empty files when in not-skip-empty-js mode", (done) => {
+		it("Include empty files when in no-omit-empty-js mode", (done) => {
 			const es6GameParameter = {
 				source: path.resolve(__dirname, "..", "fixtures", "simple_game_using_external"),
 				dest: destDir,
