@@ -61,7 +61,7 @@ describe("convert", () => {
 			convertGame(es6GameParameter)
 				.then(() => {
 					expect(fs.existsSync(destDir)).toBe(true);
-					const expected = "The following ES5 syntax errors exist.\n"
+					const expected = "Non-ES5 syntax found.\n"
 						+ "script/main.js(1:1): Parsing error: The keyword 'const' is reserved\n"
 						+ "script/foo.js(1:1): Parsing error: The keyword 'const' is reserved";
 					expect(warningMessage).toBe(expected);

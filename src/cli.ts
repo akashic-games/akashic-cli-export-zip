@@ -2,12 +2,13 @@ import * as fs from "fs";
 import * as path from "path";
 import * as commander from "commander";
 import { ConsoleLogger } from "@akashic/akashic-cli-commons";
-import { promiseExportZip } from "./bundle";
+import { promiseExportZip } from "./exportZip";
 
-interface CommandParameterObject {
+export interface CommandParameterObject {
 	cwd?: string;
 	quiet?: boolean;
 	output?: string;
+	force?: boolean;
 	strip?: boolean;
 	minify?: boolean;
 	bundle?: boolean;
@@ -15,8 +16,7 @@ interface CommandParameterObject {
 	omitEmptyJs?: boolean;
 }
 
-
-function cli(param: CommandParameterObject): void {
+export function cli(param: CommandParameterObject): void {
 	var logger = new ConsoleLogger({ quiet: param.quiet });
 	Promise.resolve()
 		.then(() => promiseExportZip({
@@ -25,6 +25,7 @@ function cli(param: CommandParameterObject): void {
 			strip: param.strip,
 			source: param.cwd,
 			dest: param.output,
+			force: param.force,
 			hashLength: !param.hashFilename ? 0 : (param.hashFilename === true) ? 20 : Number(param.hashFilename),
 			omitEmptyJs: param.omitEmptyJs,
 			logger
@@ -45,6 +46,7 @@ commander
 	.option("-C, --cwd <dir>", "A directory containing a game.json (default: .)")
 	.option("-q, --quiet", "Suppress output")
 	.option("-o, --output <fileName>", "Name of output file (default: game.zip)")
+	.option("-f, --force", "Overwrites existing files")
 	.option("-s, --strip", "Contain only files refered by game.json")
 	.option("-M, --minify", "Minify JavaScript files")
 	.option("-H, --hash-filename [length]", "Rename asset files with their hash values")
@@ -57,6 +59,7 @@ export function run(argv: string[]): void {
 		cwd: commander["cwd"],
 		quiet: commander["quiet"],
 		output: commander["output"],
+		force: commander["force"],
 		strip: commander["strip"],
 		minify: commander["minify"],
 		hashFilename: commander["hashFilename"],

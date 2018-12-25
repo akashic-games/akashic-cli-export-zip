@@ -1,2 +1,1 @@
-import { run } from "./cli";
-export { run };
+export { cli, run } from "./cli";
