@@ -14,6 +14,7 @@ export interface ConvertGameParameterObject {
 	source?: string;
 	hashLength?: number;
 	dest: string;
+	omitEmptyJs?: boolean;
 	/**
 	 * コマンドの出力を受け取るロガー。
 	 * 省略された場合、akashic-cli-commons の `new ConsoleLogger()` 。
@@ -28,6 +29,7 @@ export function _completeConvertGameParameterObject(param: ConvertGameParameterO
 	param.source = param.source || process.cwd();
 	param.hashLength = param.hashLength || 0;
 	param.logger = param.logger || new cmn.ConsoleLogger();
+	param.omitEmptyJs = !!param.omitEmptyJs;
 }
 
 export interface BundleResult {
@@ -91,7 +93,18 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			files.forEach(p => {
 				if (!noCopyingFilePaths.has(p)) {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
-					fs.writeFileSync(path.resolve(param.dest, p), fs.readFileSync(path.resolve(param.source, p)));
+					const buff = fs.readFileSync(path.resolve(param.source, p));
+
+					if (param.omitEmptyJs && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(buff.toString().trim())) {
+						Object.keys(gamejson.assets).some((key) => {
+							if (gamejson.assets[key].type === "script" && gamejson.assets[key].path === p) {
+								gamejson.assets[key].global = false;
+								return true;
+							}
+							return false;
+						});
+					}
+					fs.writeFileSync(path.resolve(param.dest, p), buff);
 				}
 			});
 			if (bundleResult === null) {

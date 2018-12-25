@@ -15,6 +15,7 @@ export interface ExportZipParameterObject {
 	force?: boolean;
 	logger?: cmn.Logger;
 	hashLength?: number;
+	omitEmptyJs?: boolean;
 }
 
 export function _completeExportZipParameterObject(param: ExportZipParameterObject): ExportZipParameterObject {
@@ -26,7 +27,8 @@ export function _completeExportZipParameterObject(param: ExportZipParameterObjec
 		dest: param.dest || "./game.zip",
 		force: !!param.force,
 		logger: param.logger || new cmn.ConsoleLogger(),
-		hashLength: param.hashLength
+		hashLength: param.hashLength,
+		omitEmptyJs: param.omitEmptyJs
 	};
 }
 
@@ -44,12 +46,14 @@ export function _checkDestinationValidity(dest: string, force: boolean): Promise
 			}
 			if (!force)
 				reject(new Error(dest + " already exists. Use --force option to overwrite."));
+			else
+				resolve();
 		});
 	});
 }
 
 export function promiseExportZip(param: ExportZipParameterObject): Promise<void> {
-	_completeExportZipParameterObject(param);
+	param = _completeExportZipParameterObject(param);
 	const outZip = /\.zip$/.test(param.dest);
 	const destDir = outZip ? fs.mkdtempSync(path.join(os.tmpdir(), "akashic-export-zip-")) : param.dest;
 
@@ -62,6 +66,7 @@ export function promiseExportZip(param: ExportZipParameterObject): Promise<void>
 				source: param.source,
 				dest: destDir,
 				hashLength: param.hashLength,
+				omitEmptyJs: param.omitEmptyJs,
 				logger: param.logger
 			});
 		})

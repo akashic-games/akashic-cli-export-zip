@@ -13,6 +13,7 @@ export interface CommandParameterObject {
 	minify?: boolean;
 	bundle?: boolean;
 	hashFilename?: number | boolean;
+	omitEmptyJs?: boolean;
 }
 
 export function cli(param: CommandParameterObject): void {
@@ -26,6 +27,7 @@ export function cli(param: CommandParameterObject): void {
 			dest: param.output,
 			force: param.force,
 			hashLength: !param.hashFilename ? 0 : (param.hashFilename === true) ? 20 : Number(param.hashFilename),
+			omitEmptyJs: param.omitEmptyJs,
 			logger
 		}))
 		.catch((err: any) => {
@@ -48,7 +50,8 @@ commander
 	.option("-s, --strip", "Contain only files refered by game.json")
 	.option("-M, --minify", "Minify JavaScript files")
 	.option("-H, --hash-filename [length]", "Rename asset files with their hash values")
-	.option("-b, --bundle", "Bundle script assets into a single file");
+	.option("-b, --bundle", "Bundle script assets into a single file")
+	.option("--no-omit-empty-js", "Disable omitting empty js from global assets");
 
 export function run(argv: string[]): void {
 	commander.parse(argv);
@@ -60,6 +63,7 @@ export function run(argv: string[]): void {
 		strip: commander["strip"],
 		minify: commander["minify"],
 		hashFilename: commander["hashFilename"],
-		bundle: commander["bundle"]
+		bundle: commander["bundle"],
+		omitEmptyJs: commander["omitEmptyJs"]
 	});
 }
