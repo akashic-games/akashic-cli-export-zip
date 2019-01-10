@@ -22,7 +22,7 @@ export function cli(param: CommandParameterObject): void {
 		.then(() => promiseExportZip({
 			bundle: param.bundle,
 			minify: param.minify,
-			strip: param.strip,
+			strip: (param.strip != null) ? param.strip : true,
 			source: param.cwd,
 			dest: param.output,
 			force: param.force,
@@ -47,14 +47,16 @@ commander
 	.option("-q, --quiet", "Suppress output")
 	.option("-o, --output <fileName>", "Name of output file (default: game.zip)")
 	.option("-f, --force", "Overwrites existing files")
-	.option("-s, --strip", "Contain only files refered by game.json")
+	.option("-S, --no-strip", "output fileset without strip")
 	.option("-M, --minify", "Minify JavaScript files")
 	.option("-H, --hash-filename [length]", "Rename asset files with their hash values")
 	.option("-b, --bundle", "Bundle script assets into a single file")
 	.option("--no-omit-empty-js", "Disable omitting empty js from global assets");
 
 export function run(argv: string[]): void {
-	commander.parse(argv);
+	// Commander の制約により --strip と --no-strip 引数を両立できないため、暫定対応として Commander 前に argv を処理する
+	const argvCopy = dropDeprecatedArgs(argv);
+	commander.parse(argvCopy);
 	cli({
 		cwd: commander["cwd"],
 		quiet: commander["quiet"],
@@ -66,4 +68,13 @@ export function run(argv: string[]): void {
 		bundle: commander["bundle"],
 		omitEmptyJs: commander["omitEmptyJs"]
 	});
+}
+
+function dropDeprecatedArgs(argv: string[]): string[] {
+	const filteredArgv = argv.filter(v => !/^(-s|--strip)$/.test(v));
+	if (argv.length !== filteredArgv.length) {
+		console.log("WARN: --strip option is deprecated. strip is applied by default.");
+		console.log("WARN: If you do not need to apply it, use --no-strip option.");
+	}
+	return filteredArgv;
 }
