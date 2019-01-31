@@ -87,8 +87,7 @@ export function promiseExportZip(param: ExportZipParameterObject): Promise<void>
 				archive.finalize();
 			});
 			// TODO mkdtempのフォルダを削除すべき？
-		})
-		.then(() => param.logger.info("Done!"));
+		});
 }
 
 export function exportZip(param: ExportZipParameterObject, callback: (err?: Error) => void): void {
