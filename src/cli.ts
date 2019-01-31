@@ -30,6 +30,7 @@ export function cli(param: CommandParameterObject): void {
 			omitEmptyJs: param.omitEmptyJs,
 			logger
 		}))
+		.then(() => logger.info("Done!"))
 		.catch((err: any) => {
 			logger.error(err);
 			process.exit(1);
