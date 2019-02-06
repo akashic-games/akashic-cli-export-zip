@@ -6,6 +6,8 @@ import * as browserify from "browserify";
 import readdir = require("fs-readdir-recursive");
 import * as gcu from "./GameConfigurationUtil";
 import * as UglifyJS from "uglify-js";
+import * as babel from "@babel/core";
+import * as presetEnv from "@babel/preset-env";
 
 export interface ConvertGameParameterObject {
 	bundle?: boolean;
@@ -89,6 +91,18 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 				gcu.removeScriptFromFilePaths(gamejson, bundleResult.filePaths);
 				noCopyingFilePaths = new Set<string>(bundleResult.filePaths);
 			}
+
+			const babelOption = {
+				presets: [
+					babel.createConfigItem([presetEnv, {
+						modules: false,
+						targets: {
+							"ie": 10
+						},
+					}], { type: 'preset' }),
+				  ],
+			};
+
 			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
 			files.forEach(p => {
 				if (!noCopyingFilePaths.has(p)) {
@@ -104,7 +118,8 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 							return false;
 						});
 					}
-					fs.writeFileSync(path.resolve(param.dest, p), buff);
+					const code = babel.transform(buff.toString().trim(), babelOption).code;
+					fs.writeFileSync(path.resolve(param.dest, p), code);
 				}
 			});
 			if (bundleResult === null) {
@@ -124,7 +139,8 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			}
 			const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
 			cmn.Util.mkdirpSync(path.dirname(entryPointAbsPath));
-			fs.writeFileSync(entryPointAbsPath, bundleResult.bundle);
+			const code = babel.transform(bundleResult.bundle, babelOption).code;
+			fs.writeFileSync(entryPointAbsPath, code);
 		})
 		.then(() => {
 			if (param.hashLength > 0) {
