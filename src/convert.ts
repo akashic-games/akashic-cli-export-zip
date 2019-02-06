@@ -11,6 +11,7 @@ import * as presetEnv from "@babel/preset-env";
 
 export interface ConvertGameParameterObject {
 	bundle?: boolean;
+	babel?: boolean;
 	minify?: boolean;
 	strip?: boolean;
 	source?: string;
@@ -26,6 +27,7 @@ export interface ConvertGameParameterObject {
 
 export function _completeConvertGameParameterObject(param: ConvertGameParameterObject): void {
 	param.bundle = !!param.bundle;
+	param.babel = !!param.babel;
 	param.minify = !!param.minify;
 	param.strip = !!param.strip;
 	param.source = param.source || process.cwd();
@@ -73,9 +75,11 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			let errorMessages: string[] = [];
 			gcu.extractScriptAssetFilePaths(gamejson).forEach(filePath => {
 				const code = fs.readFileSync(path.resolve(param.source, filePath)).toString();
-				errorMessages = errorMessages.concat(
-					cmn.LintUtil.validateEs5Code(code).map(info => `${filePath}(${info.line}:${info.column}): ${info.message}`)
-				);
+				if (!param.babel) {
+					errorMessages = errorMessages.concat(
+						cmn.LintUtil.validateEs5Code(code).map(info => `${filePath}(${info.line}:${info.column}): ${info.message}`)
+					);
+				}
 			});
 			if (errorMessages.length > 0) {
 				param.logger.warn("Non-ES5 syntax found.\n" + errorMessages.join("\n"));
@@ -108,8 +112,9 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 				if (!noCopyingFilePaths.has(p)) {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 					const buff = fs.readFileSync(path.resolve(param.source, p));
+					const trimmedBuff = buff.toString().trim();
 
-					if (param.omitEmptyJs && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(buff.toString().trim())) {
+					if (param.omitEmptyJs && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(trimmedBuff)) {
 						Object.keys(gamejson.assets).some((key) => {
 							if (gamejson.assets[key].type === "script" && gamejson.assets[key].path === p) {
 								gamejson.assets[key].global = false;
@@ -118,7 +123,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 							return false;
 						});
 					}
-					const code = babel.transform(buff.toString().trim(), babelOption).code;
+					const code = param.babel ? babel.transform(trimmedBuff, babelOption).code : trimmedBuff;
 					fs.writeFileSync(path.resolve(param.dest, p), code);
 				}
 			});
@@ -139,7 +144,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			}
 			const entryPointAbsPath = path.resolve(param.dest, entryPointPath);
 			cmn.Util.mkdirpSync(path.dirname(entryPointAbsPath));
-			const code = babel.transform(bundleResult.bundle, babelOption).code;
+			const code = param.babel ? babel.transform(bundleResult.bundle, babelOption).code : bundleResult.bundle;
 			fs.writeFileSync(entryPointAbsPath, code);
 		})
 		.then(() => {
