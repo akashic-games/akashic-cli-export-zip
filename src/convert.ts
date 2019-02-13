@@ -84,7 +84,6 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			if (errorMessages.length > 0) {
 				param.logger.warn("Non-ES5 syntax found.\n" + errorMessages.join("\n"));
 			}
-
 			if (!param.bundle)
 				return null;
 			return bundleScripts(gamejson.main || gamejson.assets.mainScene.path, param.source);
@@ -102,12 +101,13 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 						modules: false,
 						targets: {
 							"ie": 10
-						},
-					}], { type: 'preset' }),
-				  ],
+						}
+					}],
+					{ type: "preset" })
+				]
 			};
 
-			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source);
+			const files = param.strip ? gcu.extractFilePaths(gamejson, param.source) : readdir(param.source).map((p) => p.replace(/\\/g, "/"));
 			files.forEach(p => {
 				if (!noCopyingFilePaths.has(p)) {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
