@@ -111,10 +111,9 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 			files.forEach(p => {
 				if (!noCopyingFilePaths.has(p)) {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
-					const buff = fs.readFileSync(path.resolve(param.source, p));
-					const trimmedBuff = buff.toString().trim();
+					let buff = fs.readFileSync(path.resolve(param.source, p));
 
-					if (param.omitEmptyJs && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(trimmedBuff)) {
+					if (param.omitEmptyJs  && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(buff.toString().trim())) {
 						Object.keys(gamejson.assets).some((key) => {
 							if (gamejson.assets[key].type === "script" && gamejson.assets[key].path === p) {
 								gamejson.assets[key].global = false;
@@ -123,8 +122,8 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 							return false;
 						});
 					}
-					const code = param.babel ? babel.transform(trimmedBuff, babelOption).code : trimmedBuff;
-					fs.writeFileSync(path.resolve(param.dest, p), code);
+					const value: string | Buffer = (param.babel && gcu.isScriptJsFile(p)) ? babel.transform(buff.toString().trim(), babelOption).code : buff;
+					fs.writeFileSync(path.resolve(param.dest, p), value);
 				}
 			});
 			if (bundleResult === null) {
