@@ -122,7 +122,8 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 							return false;
 						});
 					}
-					const value: string | Buffer = (param.babel && gcu.isScriptJsFile(p)) ? babel.transform(buff.toString().trim(), babelOption).code : buff;
+					const value: string | Buffer =
+						(param.babel && gcu.isScriptJsFile(p)) ? babel.transform(buff.toString().trim(), babelOption).code : buff;
 					fs.writeFileSync(path.resolve(param.dest, p), value);
 				}
 			});
