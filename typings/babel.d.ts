@@ -17,4 +17,4 @@ declare module "@babel/core" {
 	export = babel
 }
 
-declare module "@babel/preset-env" { }
+declare module "@babel/preset-env" {}
