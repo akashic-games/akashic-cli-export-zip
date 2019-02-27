@@ -113,7 +113,7 @@ export function convertGame(param: ConvertGameParameterObject): Promise<void> {
 					cmn.Util.mkdirpSync(path.dirname(path.resolve(param.dest, p)));
 					let buff = fs.readFileSync(path.resolve(param.source, p));
 
-					if (param.omitEmptyJs  && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(buff.toString().trim())) {
+					if (param.omitEmptyJs && gcu.isScriptJsFile(p) && gcu.isEmptyScriptJs(buff.toString().trim())) {
 						Object.keys(gamejson.assets).some((key) => {
 							if (gamejson.assets[key].type === "script" && gamejson.assets[key].path === p) {
 								gamejson.assets[key].global = false;

@@ -54,7 +54,7 @@ commander
 	.option("-M, --minify", "Minify JavaScript files")
 	.option("-H, --hash-filename [length]", "Rename asset files with their hash values")
 	.option("-b, --bundle", "Bundle script assets into a single file")
-	.option("-B, --no-babel", "No convert JavaScript into es5")
+	.option("--es5-downpile", "No convert JavaScript into es5")
 	.option("--no-omit-empty-js", "Disable omitting empty js from global assets");
 
 export function run(argv: string[]): void {
